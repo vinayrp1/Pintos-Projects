@@ -133,6 +133,9 @@ thread_tick (void)
 #endif
   else
     kernel_ticks++;
+  
+  /* decrement time to wake up at each tick */
+  thread_foreach(thread_decr_time_to_wakeup, NULL);
 
   /* Enforce preemption. */
   if (++thread_ticks >= TIME_SLICE)
@@ -311,7 +314,7 @@ thread_yield (void)
 {
   struct thread *cur = thread_current ();
   enum intr_level old_level;
-  
+  printf("This is pretty cool"); 
   ASSERT (!intr_context ());
 
   old_level = intr_disable ();
@@ -566,6 +569,26 @@ schedule (void)
   if (cur != next)
     prev = switch_threads (cur, next);
   thread_schedule_tail (prev);
+}
+
+/* decrement time_to_wake_up attribute in thread */
+void
+thread_decr_time_to_wakeup(struct thread * t, void * aux)
+{
+  ASSERT (is_thread (t));
+  if(t->status == THREAD_BLOCKED)
+  {
+	if(t->ticks_to_wake_up)
+ 	  --(t->ticks_to_wake_up);	
+	else
+	{
+	  enum intr_level old_level;
+  	  old_level = intr_disable ();
+  	  list_push_back (&ready_list, &t->elem);
+  	  t->status = THREAD_READY;
+  	  intr_set_level (old_level);
+	}	  
+  }
 }
 
 /* Returns a tid to use for a new thread. */
