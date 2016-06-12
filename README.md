@@ -1,3 +1,3 @@
-Implementation of Pintos Strnford Projects:
+Implementation of Pintos Stanford Projects:
 
 
